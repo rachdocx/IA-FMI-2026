@@ -1,0 +1,96 @@
+#l1 distanta manhattan
+#l2 distanta euclidiana
+#?1 100% ca daca alegem ca test date din setul de antrenare cel mai apropiat vecin e chiar el
+#?2 sub 100% avvem, un label care e chiar punctul dar restul de k-1 label uri pot face parte din clasa si pot schimba predictia,
+# desi avem un hit perfect pe data respectiva
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+#1
+class KnnClassifier:
+    def __init__(self, train_images, train_labels):
+        self.train_images = train_images
+        self.train_labels = train_labels
+
+#2
+    def classify_image(self, test_image, num_neighbors=3, metric='l2'):
+        if metric == 'l2':
+            # print(np.sum((self.train_images - test_image) ** 2))
+            distanta = np.sqrt(np.sum((self.train_images - test_image) ** 2, axis=1))
+            # print (distanta)
+        elif metric == 'l1':
+            # print(np.sum(np.abs(self.train_images - test_image)))
+            distanta = np.sum(np.abs(self.train_images - test_image), axis=1)
+            # print(distanta)
+
+        nearest_indices = np.argsort(distanta)
+        nearest_indices = nearest_indices[:num_neighbors]
+        #
+        # print(nearest_indices)
+        nearest_labels = self.train_labels[nearest_indices]
+        votes = np.bincount(nearest_labels)
+        return np.argmax(votes)
+
+#3
+train_images = np.loadtxt('train_images.txt')
+train_labels = np.loadtxt('train_labels.txt')
+test_images = np.loadtxt('test_images.txt')
+test_labels = np.loadtxt('test_labels.txt')
+
+train_labels = train_labels.astype(int)
+test_labels = test_labels.astype(int)
+
+knn = KnnClassifier(train_images, train_labels)
+
+predictii = []
+for i in range(len(test_images)):
+    predictie = knn.classify_image(test_images[i], num_neighbors=3, metric='l2')
+    predictii.append(predictie)
+
+predictii = np.array(predictii)
+
+acuratete = np.mean(predictii == test_labels)
+print(acuratete * 100)
+
+np.savetxt('predictii_3nn_12_mnist.txt', predictii, fmt='%d')
+
+#4
+k_values = [1, 3, 5, 7, 9]
+accuracies_l2 = []
+accuracies_l1 = []
+
+for k in k_values:
+    predictii = []
+    for i in range(len(test_images)):
+        predictie = knn.classify_image(test_images[i], num_neighbors=k, metric='l2')
+        predictii.append(predictie)
+
+    acc = np.mean(np.array(predictii) == test_labels)
+    accuracies_l2.append(acc)
+    print(f"K={k} acuratete l2 {acc * 100}")
+
+np.savetxt('acuratete_l2.txt', accuracies_l2)
+
+for k in k_values:
+    predictii = []
+    for i in range(len(test_images)):
+        predictie = knn.classify_image(test_images[i], num_neighbors=k, metric='l1')
+        predictii.append(predictie)
+    acc = np.mean(np.array(predictii) == test_labels)
+    accuracies_l1.append(acc)
+    print(f"K={k} acuratete l1 {acc * 100}")
+
+l2_din_fisier = np.loadtxt('acuratete_l2.txt')
+
+plt.figure(figsize=(8, 8))
+plt.plot(k_values, l2_din_fisier, label='L2', color='blue')
+plt.plot(k_values, accuracies_l1, label='L1', color='orange')
+
+plt.xlabel('numarul de vecini')
+plt.ylabel('acuratete')
+plt.xticks(k_values)
+plt.legend()
+plt.grid(True)
+plt.show()

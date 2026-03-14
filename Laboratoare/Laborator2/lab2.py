@@ -60,7 +60,7 @@ greseli = np.where(predictii != test_labels)[0]
 for i in range(10):
     j = greseli[i]
     imagine_gresita = np.reshape(test_images[j], (28, 28))
-    plt.title(f"trebuia sa fie {predictii[j]}")
+    plt.title(f"s zis ca e {predictii[j]} trebuia sa fie {test_labels[j]}")
     plt.imshow(imagine_gresita.astype(np.uint8), cmap='gray')
     plt.show()
 
