@@ -108,4 +108,4 @@ def vec_binar(imagine):
     h, w = imagine.shape
     vec_final = []
 
-    for i in range(0, h - 3 + 1, 3):
+    # for i in range(0, h - 3 + 1, 3):
